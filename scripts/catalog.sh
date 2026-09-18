@@ -25,7 +25,8 @@ if [ -f "$DATA/stores.json" ]; then
   [ $AGE -ge 14 ] && echo "提示：目录快照已 ${AGE} 天，新型号/门店可能缺失——scripts/catalog.sh refresh 或 scripts/update.sh" >&2
 fi
 
-case "$CMD" in
+CMD=${1:-}
+
   refresh) refresh;;
   stores)
     jq -r --arg kw "${2:-}" --arg loc "$LOCALE" '.[] | select(.locale==$loc) | .state[] as $s
