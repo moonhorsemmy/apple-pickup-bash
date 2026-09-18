@@ -18,7 +18,13 @@ refresh() {
 }
 [ -f "$DATA/stores.json" ] || refresh >/dev/null
 
-CMD=${1:-}
+# 快照过期提醒（≥14 天提示 refresh/update）
+if [ -f "$DATA/stores.json" ]; then
+  MOD=$(stat -f %m "$DATA/stores.json" 2>/dev/null || stat -c %Y "$DATA/stores.json" 2>/dev/null || echo 0)
+  AGE=$(( ( $(date +%s) - MOD ) / 86400 ))
+  [ $AGE -ge 14 ] && echo "提示：目录快照已 ${AGE} 天，新型号/门店可能缺失——scripts/catalog.sh refresh 或 scripts/update.sh" >&2
+fi
+
 case "$CMD" in
   refresh) refresh;;
   stores)

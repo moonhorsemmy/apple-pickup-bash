@@ -7,6 +7,7 @@ if [ ! -f "$DATA/stores.json" ] && [ -f "$APW_DIR/data/stores.json" ]; then
   cp "$APW_DIR/data/"*.json "$DATA/" 2>/dev/null
 fi
 JAR="$VAR/cookies.txt"
+APW_VERSION="2.3"
 UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 apw_config() {

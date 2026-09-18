@@ -90,7 +90,14 @@ jq -r '.stores[] | select(.parts["MJTD4CH/A"]=="available") | "\(.ts) \(.name)"'
 
 本仓库即一份 skill：把目录放进你的 skills 目录（如 `~/.agents/skills/`），agent 读 `SKILL.md` 即知用法与纪律。兼容 macOS 自带 bash 3.2。
 
-## 致敬与许可
+## 更新
+
+```bash
+scripts/update.sh        # git pull 到最新版（尊重 config 的 PROXY 设置）
+```
+
+克隆安装的用户跑 update.sh 即可；zip 下载的建议改用 git clone。用户配置（config.env）与运行数据（var/）不会被更新覆盖。目录快照超过 14 天会自动提醒 refresh。
+
 
 - 接口知识与工程纪律致敬 [ENCHIGO/apple-pickup-watcher](https://github.com/ENCHIGO/apple-pickup-watcher)（GPL-3.0，其上游为 hteen/apple-store-helper）；本项目未复制其代码，详见 `NOTICE`
 - [GPL-3.0-or-later](LICENSE)
