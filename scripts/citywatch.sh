@@ -55,11 +55,12 @@ fi
 printf '%s' "$APW_BODY" | jq -c --argjson parts "$PARTS_JSON" \
   '.body.stores[] | {no:.storeNumber, name:.storeName,
      st:[(.partsAvailability // {}) | to_entries[] | select(.key as $k | any($parts[]; . == $k))
-        | {key:.key, d:(.value.pickupDisplay // ""), t:(.value.messageTypes.regular.storePickupProductTitle // "?")}]}' \
+        | {key:.key, d:(.value.pickupDisplay // ""), t:(.value.messageTypes.regular.storePickupProductTitle // "")}]}' \
 | while IFS= read -r line; do
     NO=$(printf '%s' "$line" | jq -r '.no'); NAME=$(printf '%s' "$line" | jq -r '.name')
     printf '%s' "$line" | jq -c '.st[]' | while IFS= read -r st; do
       P=$(printf '%s' "$st" | jq -r '.key'); D=$(printf '%s' "$st" | jq -r '.d'); T=$(printf '%s' "$st" | jq -r '.t')
+      [ -z "$T" ] && T="$P"   # Apple 没给机型名时退回零件号
       KEY="$NO|$P"; OLD=$(apw_state_get "$KEY")
       if [ "$D" = "available" ] && [ "$OLD" != "available" ]; then
         # 复核：等 5 秒对该店单查一次，仍是有货才推送（实际有货再通知）

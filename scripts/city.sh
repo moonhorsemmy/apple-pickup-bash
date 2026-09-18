@@ -33,9 +33,12 @@ printf '%s' "$APW_BODY" | jq -c '.body.stores[] | {no:.storeNumber, name:.storeN
     CNT=$(printf '%s' "$line" | jq -r '.av | length')
     echo "-- $NAME($NO)：$CNT 个 SKU 有货"
     printf '%s' "$line" | jq -r '.av[] | "   \(.title)  [\(.part)]"'
-    printf '%s' "$line" | jq -r '.av[] | .part' | while IFS= read -r p; do
+    printf '%s' "$line" | jq -c '.av[]' | while IFS= read -r av; do
+      p=$(printf '%s' "$av" | jq -r '.part')
+      t=$(printf '%s' "$av" | jq -r '.title // ""')
+      [ -z "$t" ] && t="$p"   # Apple 没给机型名时退回零件号
       if [ "$(apw_state_get "$NO|$p")" != "available" ]; then
-        apw_bark "📱有货了" "$NAME($NO) $p 可到店取货" "$(apw_buy_url "$p")"
+        apw_bark "📱有货了" "$NAME($NO) $t 可到店取货" "$(apw_buy_url "$p")"
         apw_state_set "$NO|$p" "available"
       fi
     done

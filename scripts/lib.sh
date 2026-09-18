@@ -63,7 +63,8 @@ apw_buy_url() { # $1=零件号
 # 推送：向所有已配置通道发（任配一个即可；都没配则告警提示）
 # 通道：BARK_URL / SERVERCHAN_KEY（微信）/ NTFY_TOPIC / IMSG_ADDR（iMessage，零安装）/ FEISHU_WEBHOOK
 # $3 可选=购买页链接：Bark 点通知跳转 / ntfy Click 跳转 / 其余附在正文里（可点开）
-apw_push() { # $1=标题 $2=正文 [$3=链接]
+apw_push() { # $1=标题 $2=正文 [$3=链接]；NOPUSH=1 时静默跳过（手动批量查询用）
+  [ "${NOPUSH:-0}" = "1" ] && return 0
   local sent=0 t b msg u uenc
   u="${3:-}"
   if [ -n "${BARK_URL:-}" ]; then
