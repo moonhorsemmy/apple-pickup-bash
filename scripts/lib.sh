@@ -50,27 +50,49 @@ apw_classify() { # $1=display 原值
   esac
 }
 
+# 零件号 → 官网购买页直达链接（族页面 + product 预选参数，浏览器打开即选中该配置）
+apw_buy_url() { # $1=零件号
+  local fam cat
+  fam=$(jq -r --arg p "$1" '.[] | select([.data.products[]? | select((.partNumber // .part) == $p)] | length > 0) | .family // empty' "$DATA/products_$LOCALE.json" 2>/dev/null | head -1)
+  cat=$(jq -r --arg p "$1" '.[] | select([.data.products[]? | select((.partNumber // .part) == $p)] | length > 0) | .category // empty' "$DATA/products_$LOCALE.json" 2>/dev/null | head -1)
+  if [ -z "$fam" ] || [ -z "$cat" ]; then echo "$BASE_URL/shop"; return; fi
+  echo "$BASE_URL/shop/buy-${cat}/${fam}?product=$1"
+}
+
 # 推送：向所有已配置通道发（任配一个即可；都没配则告警提示）
 # 通道：BARK_URL / SERVERCHAN_KEY（微信）/ NTFY_TOPIC / IMSG_ADDR（iMessage，零安装）/ FEISHU_WEBHOOK
-apw_push() { # $1=标题 $2=正文
-  local sent=0 t b msg
+# $3 可选=购买页链接：Bark 点通知跳转 / ntfy Click 跳转 / 其余附在正文里（可点开）
+apw_push() { # $1=标题 $2=正文 [$3=链接]
+  local sent=0 t b msg u uenc
+  u="${3:-}"
   if [ -n "${BARK_URL:-}" ]; then
     t=$(jq -rn --arg x "$1" '$x|@uri'); b=$(jq -rn --arg x "$2" '$x|@uri')
-    curl -s --max-time 15 "$BARK_URL/$t/$b?group=apple-pickup" -o /dev/null && sent=1
+    uenc=""; [ -n "$u" ] && uenc=$(jq -rn --arg x "$u" '$x|@uri')
+    curl -s --max-time 15 "$BARK_URL/$t/$b?group=apple-pickup${uenc:+&url=$uenc}" -o /dev/null && sent=1
   fi
   if [ -n "${SERVERCHAN_KEY:-}" ]; then
+    [ -n "$u" ] && b="$2
+
+[点此直达购买页]($u)" || b="$2"
     curl -s --max-time 15 -X POST "https://sctapi.ftqq.com/${SERVERCHAN_KEY}.send" \
-      --data-urlencode "title=$1" --data-urlencode "desp=$2" -o /dev/null && sent=1
+      --data-urlencode "title=$1" --data-urlencode "desp=$b" -o /dev/null && sent=1
   fi
   if [ -n "${NTFY_TOPIC:-}" ]; then
-    curl -s --max-time 15 -H "Title: $1" -H "Tags: bell" -d "$2" "https://ntfy.sh/${NTFY_TOPIC}" -o /dev/null && sent=1
+    if [ -n "$u" ]; then
+      curl -s --max-time 15 -H "Title: $1" -H "Tags: bell" -H "Click: $u" -d "$2" "https://ntfy.sh/${NTFY_TOPIC}" -o /dev/null && sent=1
+    else
+      curl -s --max-time 15 -H "Title: $1" -H "Tags: bell" -d "$2" "https://ntfy.sh/${NTFY_TOPIC}" -o /dev/null && sent=1
+    fi
   fi
   if [ -n "${IMSG_ADDR:-}" ]; then
-    msg=$(printf '%s — %s' "$1" "$2" | tr -d '"' | tr -d '\\')
+    msg=$(printf '%s — %s%s' "$1" "$2" "${u:+
+
+$u}" | tr -d '"' | tr -d '\\')
     osascript -e "tell application \"Messages\" to send \"$msg\" to buddy \"$IMSG_ADDR\"" >/dev/null 2>&1 && sent=1
   fi
   if [ -n "${FEISHU_WEBHOOK:-}" ]; then
-    msg=$(printf '%s — %s' "$1" "$2" | jq -Rs .)
+    msg=$(printf '%s — %s%s' "$1" "$2" "${u:+
+$u}" | jq -Rs .)
     curl -s --max-time 15 -X POST "$FEISHU_WEBHOOK" -H 'Content-Type: application/json' \
       -d "{\"msg_type\":\"text\",\"content\":{\"text\":$msg}}" -o /dev/null && sent=1
   fi

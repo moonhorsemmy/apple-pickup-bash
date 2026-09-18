@@ -37,7 +37,13 @@ cp scripts/config.example.env scripts/config.env   # 编辑，任配一个通道
 scripts/test-push.sh                               # 发一条测试，手机收到=链路通
 ```
 
-未配置推送通道时，到货只写入日志与 beats.jsonl——监控不失效，但你看不到实时提醒。
+到货提醒自带官网购买页直达链接（按零件号生成，Bark/ntfy 点通知直接跳转，其余通道链接可点）：
+
+```
+📱有货了 — 天津大悦城(R637) iPhone 18 Pro 512GB 银色 现在可到店取货
+https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro?product=MJTD4CH/A
+```
+
 
 ## 常驻监控
 

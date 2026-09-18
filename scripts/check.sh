@@ -35,7 +35,7 @@ for p in "${PARTS_Q[@]}"; do
   if [ "$DISPLAY" = "available" ]; then
     ANY_IN=1
     if [ "$(apw_state_get "$STORE|$p")" != "available" ]; then
-      apw_bark "📱有货了" "$NAME($STORE) $p 现在可到店取货"
+      apw_bark "📱有货了" "$NAME($STORE) $p 现在可到店取货" "$(apw_buy_url "$p")"
     fi
   fi
   apw_state_set "$STORE|$p" "$DISPLAY"

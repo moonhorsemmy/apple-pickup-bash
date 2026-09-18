@@ -56,7 +56,7 @@ printf '%s' "$APW_BODY" | jq -c --argjson parts "$PARTS_JSON" \
       KEY="$NO|$P"; OLD=$(apw_state_get "$KEY")
       if [ "$D" = "available" ] && [ "$OLD" != "available" ]; then
         echo "[$TS] 🎯 HIT $NAME($NO) $T [$P]"
-        apw_bark "📱有货了" "$NAME($NO) $T 现在可到店取货"
+        apw_bark "📱有货了" "$NAME($NO) $T 现在可到店取货" "$(apw_buy_url "$P")"
       fi
       apw_state_set "$KEY" "$D"
     done

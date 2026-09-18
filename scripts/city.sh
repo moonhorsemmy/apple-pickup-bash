@@ -35,7 +35,7 @@ printf '%s' "$APW_BODY" | jq -c '.body.stores[] | {no:.storeNumber, name:.storeN
     printf '%s' "$line" | jq -r '.av[] | "   \(.title)  [\(.part)]"'
     printf '%s' "$line" | jq -r '.av[] | .part' | while IFS= read -r p; do
       if [ "$(apw_state_get "$NO|$p")" != "available" ]; then
-        apw_bark "📱有货了" "$NAME($NO) $p 可到店取货"
+        apw_bark "📱有货了" "$NAME($NO) $p 可到店取货" "$(apw_buy_url "$p")"
         apw_state_set "$NO|$p" "available"
       fi
     done

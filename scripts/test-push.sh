@@ -23,5 +23,5 @@ if [ $CNT -eq 0 ]; then
   exit 2
 fi
 echo "===== 发送测试 ====="
-apw_push "🔔 apple-pickup-bash 链路测试" "推送链路已打通 $(date '+%m-%d %H:%M:%S')。真实到货提醒将使用本通道。"
+apw_push "🔔 apple-pickup-bash 链路测试" "推送链路已打通。真实到货提醒长这样（含购买直达链接，点开试试）" "$(apw_buy_url MJT74CH/A)"
 echo "手机上收到测试消息即链路完成；没收到检查对应通道配置。"
