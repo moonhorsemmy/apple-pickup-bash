@@ -58,6 +58,7 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.$USER.apple-pickup-b
 3. **只提醒，不下单**：到"通知你"为止，加购/结账/付款用户自己在官网完成。
 4. **单进程**：同时只跑一个 watch/sweep；Apple Watch 表壳要连带表带零件号（companionPart，目录里有）。
 5. 仅供个人查询使用。
+6. **实际有货才通知**：翻转后 sleep 5 单店复核，确认 available 才推送；**确认即写 var/STOP 停止追踪**（resume.sh 恢复并重置基线）。
 
 ## 维护备忘（改脚本前必读，都是踩过的坑）
 

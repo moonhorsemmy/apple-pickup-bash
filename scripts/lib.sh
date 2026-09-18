@@ -135,3 +135,15 @@ apw_in_cooldown() {
 apw_enter_cooldown() { # $1=秒，默认 600
   echo $(( $(date +%s) + ${1:-600} )) > "$(apw_cooldown_file)"
 }
+
+# 复核：对单店单零件独立再查一次（不碰 apw_query 的全局变量）
+# 返回 pickupDisplay 原值；查询失败/非JSON/查不到返回空字符串
+apw_verify() { # $1=店号 $2=零件号
+  local resp code body
+  resp=$(curl -s -G -b "$JAR" -A "$UA" -H "Accept: application/json" -H "Referer: $BUY_PAGE" \
+    --data-urlencode "pl=true" --data-urlencode "mts.0=regular" --data-urlencode "store=$1" \
+    --data-urlencode "parts.0=$2" --max-time 20 -w "\n%{http_code}" "$BASE_URL/shop/retail/pickup-message") || { echo ""; return; }
+  code=$(printf '%s' "$resp" | tail -n1); body=$(printf '%s' "$resp" | sed '$d')
+  [ "$code" = "200" ] || { echo ""; return; }
+  printf '%s' "$body" | jq -r --arg p "$2" '.body.stores[0].partsAvailability[$p].pickupDisplay // empty' 2>/dev/null
+}

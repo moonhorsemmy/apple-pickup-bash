@@ -44,6 +44,11 @@ scripts/test-push.sh                               # 发一条测试，手机收
 https://www.apple.com.cn/shop/buy-iphone/iphone-18-pro?product=MJTD4CH/A
 ```
 
+**监控语义（v2.2）**：
+
+- **实际有货才通知**：检测到状态翻转后，等 5 秒对该店单独复核一次，确认仍有货才推送；转瞬即逝的只记日志，不打扰你
+- **确认有货即停止追踪**：推送后写入 `var/STOP`，后续每拍直接跳过——目标是买到一台，不是永久蹲守
+- **恢复监控**：`scripts/resume.sh`（清 STOP 与状态基线；若恢复时恰好有货，下一拍会重新确认并推送）
 
 ## 常驻监控
 
