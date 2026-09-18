@@ -15,7 +15,11 @@ S=<本仓库目录>/scripts
 $S/catalog.sh refresh            # 拉/更新门店+零件号快照到 var/data/（走代理，缺了会自动拉）
 $S/catalog.sh stores 上海         # 查门店号（省 城市 店名）
 $S/catalog.sh parts "18 Pro 512"  # 查零件号（也可传家族名如 iphone-18-pro 全展开）
-$S/catalog.sh families           # 家族清单；cities = 全国「省 市」清单
+$S/catalog.sh cities           # 家族清单；cities = 全国「省 市」清单（城市查询必须用这个格式）
+$S/city.sh "北京 北京" MJY64CH/A     # 同城查询示例（18 Pro Max）
+```
+
+**⚠️ 城市查询格式（最高频的坑）**：location 必须是「**省 市**」两段式（`"上海 上海"`、`"江苏 苏州"`、`"北京 北京"`、`"广东 深圳"`）。只写城市名（`location=北京`）会被 Apple 拒绝——响应 HTTP 200 但 `body.errorMessage="请输入有效的省/市名称或邮政编码"`、门店列表为空。**这属于查询格式错误，不是无货**。全表见 `$S/catalog.sh cities`。
 
 $S/check.sh                      # 查一次 config.env 里的 STORE×PARTS
 $S/check.sh R388 MJTD4CH/A       # 临时覆盖门店/零件号
@@ -48,9 +52,10 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.$USER.apple-pickup-b
 
 1. **接口只有"有/无"，没有数量**。"哪个版本货最多"= 有货门店数（sweep.sh 的口径）。
 2. **大陆 location 必须写「省 市」**（"上海 上海""江苏 苏州"），只写城市名返回 0 店；「北京 北京」偶发 0 店，可用邻城（如天津）的 nearby 覆盖——**nearby 半径很大、跨城重叠**，聚合必须按 storeNumber 去重。
-3. **成功信封+空门店列表** = 型号未开售/停售/当前不可购买（Duo 10 月发售期查它就是这样），不是无货也不是出错。
+3. **成功信封+空门店列表** = 型号未开售/停售/当前不可购买（Duo 10 月发售期查它就是这样），不是无货也不是出错。**实测案例（2026-09-18 首销日）：18 Pro Max 全国 0 店有货——单独查任何店的 Pro Max 零件，Apple 正常返回门店+该零件 `unavailable`（这是真无货）；但若返回空门店列表，则是"未铺货"信号，别当查询故障**。
 4. **限频实测**：Apple 按出口 IP 计，连续约 30 次请求触发 HTTP 541（拦 10–15 分钟）；26 城×4s 间隔的全国扫描实测不触发。被 541 → 停 10 分钟，勿并发绕过。
 5. 全国 ≈26 个「省 市」location 查询即可覆盖全部 46 店（邻城重叠互相补齐）。
+6. **Windows 用户**：本工具脚本依赖 bash+jq（Git Bash 可跑）；若无此环境，agent 可按本文件的接口口径直接用 curl/PowerShell 复刻查询——但「省 市」格式、三态纪律、限频自律必须原样遵守。
 
 ## 铁律（agent 必须遵守，违反=害用户错过货）
 
