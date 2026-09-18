@@ -1,0 +1,5 @@
+# 运行时数据（含 cookies/个人蹲货记录，切勿提交）
+var/
+scripts/config.env
+*.log
+.DS_Store

@@ -1,0 +1,18 @@
+NOTICE
+======
+
+本项目的接口知识（/shop/retail/pickup-message 端点、查询参数、三态语义、
+大陆「省 市」location 格式、按出口 IP 的限频特征）学习自开源项目：
+
+  ENCHIGO/apple-pickup-watcher（GPL-3.0-or-later）
+  https://github.com/ENCHIGO/apple-pickup-watcher
+  其上游为 hteen/apple-store-helper（GPL-3.0）
+
+本项目未复制上述项目的任何代码，是独立的零依赖实现
+（bash + curl + jq），按 GPL-3.0-or-later 发布，与上游生态保持许可一致。
+
+目录快照 data/*.json 复制自 ENCHIGO/apple-pickup-watcher 仓库的
+crates/apw-core/data/，遵循其 GPL-3.0 许可。
+
+本项目与 Apple Inc. 无关联，未获其授权或认可。仅供个人查询到店取货
+库存使用：不自动下单、不预留库存、不做任何规避平台限制的功能。
