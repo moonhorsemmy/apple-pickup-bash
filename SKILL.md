@@ -23,8 +23,8 @@ $S/city.sh "上海 上海"            # 同城一次查全部门店（nearby 模
 $S/sweep.sh iphone-18-pro        # 全国扫描+排行（可逗号分隔多家族；SWEEP_LIMIT=3 截断测试）
 $S/watch.sh 60                   # 前台蹲守（默认 60s，下限 30；拍视频就拍这个窗口）
 $S/citywatch.sh "北京 北京" MJTD4CH/A   # 单拍城市监控（给 launchd 用，也可手动）
-$S/diff.sh                        # 对比两次 sweep 快照
-$S/update.sh                       # 更新到最新版（git pull，尊重 PROXY）（新增/消失/门店数变化；不传参自动取最近两个）
+$S/diff.sh                        # 对比两次 sweep 快照（新增/消失/门店数变化；不传参自动取最近两个）
+$S/update.sh                      # 更新到最新版（git pull，尊重 PROXY）
 ```
 
 **监控数据底座**：`var/beats.jsonl`——citywatch 每拍追加一行结构化数据（时间×门店×零件状态），放货规律分析就是一条 jq，例如查某零件的全部出现历史：
