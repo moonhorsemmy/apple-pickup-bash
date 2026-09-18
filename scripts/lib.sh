@@ -50,15 +50,37 @@ apw_classify() { # $1=display 原值
   esac
 }
 
-apw_bark() { # $1=标题 $2=正文（失败自动重试一次并告警）
-  [ -z "${BARK_URL:-}" ] && return 0
-  local t b
-  t=$(jq -rn --arg x "$1" '$x|@uri'); b=$(jq -rn --arg x "$2" '$x|@uri')
-  curl -s --max-time 15 "$BARK_URL/$t/$b" -o /dev/null && return 0
-  sleep 3
-  curl -s --max-time 15 "$BARK_URL/$t/$b" -o /dev/null \
-    || echo "[$(date '+%m-%d %H:%M:%S')] ⚠️ Bark 推送失败，检查 config.env BARK_URL"
+# 推送：向所有已配置通道发（任配一个即可；都没配则告警提示）
+# 通道：BARK_URL / SERVERCHAN_KEY（微信）/ NTFY_TOPIC / IMSG_ADDR（iMessage，零安装）/ FEISHU_WEBHOOK
+apw_push() { # $1=标题 $2=正文
+  local sent=0 t b msg
+  if [ -n "${BARK_URL:-}" ]; then
+    t=$(jq -rn --arg x "$1" '$x|@uri'); b=$(jq -rn --arg x "$2" '$x|@uri')
+    curl -s --max-time 15 "$BARK_URL/$t/$b?group=apple-pickup" -o /dev/null && sent=1
+  fi
+  if [ -n "${SERVERCHAN_KEY:-}" ]; then
+    curl -s --max-time 15 -X POST "https://sctapi.ftqq.com/${SERVERCHAN_KEY}.send" \
+      --data-urlencode "title=$1" --data-urlencode "desp=$2" -o /dev/null && sent=1
+  fi
+  if [ -n "${NTFY_TOPIC:-}" ]; then
+    curl -s --max-time 15 -H "Title: $1" -H "Tags: bell" -d "$2" "https://ntfy.sh/${NTFY_TOPIC}" -o /dev/null && sent=1
+  fi
+  if [ -n "${IMSG_ADDR:-}" ]; then
+    msg=$(printf '%s — %s' "$1" "$2" | tr -d '"' | tr -d '\\')
+    osascript -e "tell application \"Messages\" to send \"$msg\" to buddy \"$IMSG_ADDR\"" >/dev/null 2>&1 && sent=1
+  fi
+  if [ -n "${FEISHU_WEBHOOK:-}" ]; then
+    msg=$(printf '%s — %s' "$1" "$2" | jq -Rs .)
+    curl -s --max-time 15 -X POST "$FEISHU_WEBHOOK" -H 'Content-Type: application/json' \
+      -d "{\"msg_type\":\"text\",\"content\":{\"text\":$msg}}" -o /dev/null && sent=1
+  fi
+  if [ $sent -eq 0 ]; then
+    echo "[$(date '+%m-%d %H:%M:%S')] ⚠️ 无可用推送通道：在 config.env 配 BARK_URL / SERVERCHAN_KEY / NTFY_TOPIC / IMSG_ADDR / FEISHU_WEBHOOK 任一，并跑 scripts/test-push.sh 验证"
+    return 1
+  fi
+  return 0
 }
+apw_bark() { apw_push "$@"; }  # 兼容旧名
 
 # state.txt 键值（键可含 "店号|零件号"），变有货才推
 apw_state_get() { grep "^$1=" "$VAR/state.txt" 2>/dev/null | tail -n1 | cut -d= -f2-; }

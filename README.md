@@ -2,7 +2,7 @@
 
 **苹果直营店到店取货库存监控与到货提醒 —— 零依赖 bash 版**（macOS / Linux，bash + curl + jq）。
 
-盯住你想买的 iPhone / iPad / Mac / Apple Watch：选好门店和型号，一有货就推 Bark 到手机。
+盯住你想买的 iPhone / iPad / Mac / Apple Watch：选好门店和型号，一有货就推送提醒（Bark / 微信 Server酱 / ntfy / iMessage / 飞书 任一通道）。
 也是一份可直接装进 AI agent 的 skill（`SKILL.md`）。
 
 > 一句话纪律：**只提醒，不下单**。加购、结账、付款由你自己在 Apple 官网完成。
@@ -28,6 +28,16 @@ scripts/check.sh R388 MJT74CH/A                      # 查一次
 ```
 
 依赖：bash、curl、jq（macOS：`brew install jq`）。
+
+## 配置推送（不配则只记日志，不会推手机）
+
+```bash
+cp scripts/config.example.env scripts/config.env   # 编辑，任配一个通道：
+#   Bark(专用App) / Server酱(微信) / ntfy(零账号) / iMessage(零安装) / 飞书
+scripts/test-push.sh                               # 发一条测试，手机收到=链路通
+```
+
+未配置推送通道时，到货只写入日志与 beats.jsonl——监控不失效，但你看不到实时提醒。
 
 ## 常驻监控
 
