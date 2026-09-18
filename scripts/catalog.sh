@@ -26,7 +26,7 @@ if [ -f "$DATA/stores.json" ]; then
 fi
 
 CMD=${1:-}
-
+case "$CMD" in
   refresh) refresh;;
   stores)
     jq -r --arg kw "${2:-}" --arg loc "$LOCALE" '.[] | select(.locale==$loc) | .state[] as $s
